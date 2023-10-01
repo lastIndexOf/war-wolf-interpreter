@@ -90,7 +90,7 @@ impl<'a> LexerIter<'a> {
 
     fn find_global_var(ident: &str) -> Option<Token> {
         match ident {
-            GLOBAL_VAR_PRINT => Some(Token {
+            "print" => Some(Token {
                 ty: TokenType::GlobalVar(Vars::Print),
                 literal: ident.into(),
             }),
