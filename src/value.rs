@@ -18,3 +18,9 @@ impl Debug for Value {
         }
     }
 }
+
+impl Default for Value {
+    fn default() -> Self {
+        Value::Nil
+    }
+}

@@ -1,8 +1,8 @@
-use crate::{bytecode::ByteCode, common::GLOBAL_VAR_PRINT, value::Value};
+use crate::bytecode::ByteCode;
 
 use super::{
     lexer::Lexer,
-    token::{GlobalVar, Token, TokenType},
+    token::{Token, TokenType, Vars},
 };
 
 #[derive(Debug)]
@@ -10,12 +10,12 @@ pub struct Parser;
 
 #[derive(Debug)]
 pub struct Prototype {
-    pub constants: Vec<Value>,
+    pub constants: Vec<Vars>,
     pub bytecode: Vec<ByteCode>,
 }
 
 impl Parser {
-    pub fn parse(&self, input: &'static str) -> Prototype {
+    pub fn parse(input: &str) -> Prototype {
         let lexer = Lexer::new(input);
 
         let mut constants = vec![];
@@ -26,8 +26,8 @@ impl Parser {
         while let Some(Token { ty, .. }) = lexer_iter.next() {
             match ty {
                 TokenType::GlobalVar(global_var) => match global_var {
-                    GlobalVar::Print => {
-                        constants.push(Value::String(GLOBAL_VAR_PRINT.into()));
+                    Vars::Print => {
+                        constants.push(Vars::Print);
                         bytecode.push(ByteCode::GetGlobal(0, (constants.len() - 1) as u8));
 
                         if let Some(Token {
@@ -35,14 +35,14 @@ impl Parser {
                             ..
                         }) = lexer_iter.next()
                         {
-                            constants.push(Value::String(val));
+                            constants.push(Vars::General(val));
                             bytecode.push(ByteCode::LoadK(1, (constants.len() - 1) as u8));
                             bytecode.push(ByteCode::Call(0, 1));
                         } else {
                             panic!("not implement!");
                         }
                     }
-                    GlobalVar::General(_) => panic!("not implement!"),
+                    Vars::General(_) => panic!("not implement!"),
                 },
                 TokenType::String(_) => panic!("not implement!"),
                 TokenType::Ident(_) => panic!("not implement!"),

@@ -8,12 +8,12 @@ pub struct Token {
 pub enum TokenType {
     Ident(String),
     String(String),
-    GlobalVar(GlobalVar),
+    GlobalVar(Vars),
     EOF,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub enum GlobalVar {
+pub enum Vars {
     Print,
     General(String),
 }

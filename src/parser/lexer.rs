@@ -1,23 +1,19 @@
-use crate::common::GLOBAL_VAR_PRINT;
-
-use super::token::{GlobalVar, Token, TokenType};
-
-pub type Source = &'static str;
+use super::token::{Token, TokenType, Vars};
 
 #[derive(Debug)]
-pub struct Lexer {
-    input: Source,
+pub struct Lexer<'a> {
+    input: &'a str,
 }
 
 #[derive(Debug)]
 
-pub struct LexerIter {
-    input: Source,
+pub struct LexerIter<'a> {
+    input: &'a str,
     pos: usize,
 }
 
-impl Lexer {
-    pub fn new<T: Into<Source>>(input: T) -> Self {
+impl<'a> Lexer<'a> {
+    pub fn new<T: Into<&'a str>>(input: T) -> Self {
         Lexer {
             input: input.into(),
         }
@@ -31,7 +27,7 @@ impl Lexer {
     }
 }
 
-impl Iterator for LexerIter {
+impl<'a> Iterator for LexerIter<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -43,6 +39,11 @@ impl Iterator for LexerIter {
 
         loop {
             self.trim();
+
+            if self.pos >= self.input.len() {
+                return None;
+            }
+
             match bytes[self.pos] {
                 b'a'..b'z' | b'A'..b'Z' | b'_' => return Some(self.find_ident()),
                 b'"' | b'\'' => return Some(self.find_string()),
@@ -57,7 +58,7 @@ impl Iterator for LexerIter {
     }
 }
 
-impl LexerIter {
+impl<'a> LexerIter<'a> {
     fn find_ident(&mut self) -> Token {
         let bytes = self.input.as_bytes();
         let mut res = String::new();
@@ -90,7 +91,7 @@ impl LexerIter {
     fn find_global_var(ident: &str) -> Option<Token> {
         match ident {
             GLOBAL_VAR_PRINT => Some(Token {
-                ty: TokenType::GlobalVar(GlobalVar::Print),
+                ty: TokenType::GlobalVar(Vars::Print),
                 literal: ident.into(),
             }),
             _ => None,
@@ -130,30 +131,12 @@ impl LexerIter {
         let bytes = self.input.as_bytes();
 
         loop {
+            if self.pos >= self.input.len() {
+                break;
+            }
+
             match bytes[self.pos] {
                 b' ' | b'\t' | b'\n' => self.skip_one(),
-                b';' => self.skip_one(),
-                _ => break,
-            }
-        }
-    }
-
-    fn skip_whitespace(&mut self) {
-        let bytes = self.input.as_bytes();
-
-        loop {
-            match bytes[self.pos] {
-                b' ' | b'\t' | b'\n' => self.skip_one(),
-                _ => break,
-            }
-        }
-    }
-
-    fn skip_semicolon(&mut self) {
-        let bytes = self.input.as_bytes();
-
-        loop {
-            match bytes[self.pos] {
                 b';' => self.skip_one(),
                 _ => break,
             }
@@ -167,8 +150,6 @@ impl LexerIter {
 
 #[cfg(test)]
 mod test_lexer {
-    use crate::parser::token::GlobalVar;
-
     use super::*;
 
     #[test]
@@ -177,7 +158,7 @@ mod test_lexer {
         let lexer = Lexer::new(input);
         let res = [
             Token {
-                ty: TokenType::GlobalVar(GlobalVar::Print),
+                ty: TokenType::GlobalVar(Vars::Print),
                 literal: "print".into(),
             },
             Token {
