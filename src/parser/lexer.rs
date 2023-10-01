@@ -42,7 +42,7 @@ impl Iterator for LexerIter {
         let bytes = self.input.as_bytes();
 
         loop {
-            self.skip_whitespace();
+            self.trim();
             match bytes[self.pos] {
                 b'a'..b'z' | b'A'..b'Z' | b'_' => return Some(self.find_ident()),
                 b'"' | b'\'' => return Some(self.find_string()),
@@ -126,12 +126,35 @@ impl LexerIter {
         }
     }
 
+    fn trim(&mut self) {
+        let bytes = self.input.as_bytes();
+
+        loop {
+            match bytes[self.pos] {
+                b' ' | b'\t' | b'\n' => self.skip_one(),
+                b';' => self.skip_one(),
+                _ => break,
+            }
+        }
+    }
+
     fn skip_whitespace(&mut self) {
         let bytes = self.input.as_bytes();
 
         loop {
             match bytes[self.pos] {
                 b' ' | b'\t' | b'\n' => self.skip_one(),
+                _ => break,
+            }
+        }
+    }
+
+    fn skip_semicolon(&mut self) {
+        let bytes = self.input.as_bytes();
+
+        loop {
+            match bytes[self.pos] {
+                b';' => self.skip_one(),
                 _ => break,
             }
         }

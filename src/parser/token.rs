@@ -12,7 +12,8 @@ pub enum TokenType {
     EOF,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum GlobalVar {
     Print,
+    General(String),
 }
