@@ -6,6 +6,13 @@ pub struct Token {
 
 #[derive(Debug, PartialEq)]
 pub enum TokenType {
-    Name(String),
+    Ident(String),
     String(String),
+    GlobalVar(GlobalVar),
+    EOF,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum GlobalVar {
+    Print,
 }
